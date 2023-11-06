@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.vreads.backend.mapper.VreadsMapper">
+	
+	<!-- Vread 등록하기 -->
+	<insert id="insert" parameterType="VreadsVO">
+	INSERT INTO vreads_webapp.vreads
+		(
+			vreads_idx, 
+			mem_idx, 
+			vd_vtTitle, 
+			vd_vtDetail, 
+			vd_media_1, 
+			vd_media_2, 
+			vd_media_3, 
+			vd_subtag, 
+			vd_comment_idx, 
+			vd_createDate, 
+			vd_modifyDate
+		)
+		VALUES
+		(
+			NULL, 
+			#{mem_idx}, 
+			#{vd_vtTitle}, 
+			#{vd_vtDetail}, 
+			#{vd_media_1}, 
+			#{vd_media_2}, 
+			#{vd_media_3}, 
+			#{vd_subtag}, 
+			#{vd_comment_idx}, 
+			NULL, 
+			NULL
+		);
+	</insert>
+	
+	<!-- 특정 유저 Vreads 불러오기-->
+	<!-- 부등호 사용시 <![CDATA[부등호]]> 사용 -->
+	<select id="selectUserVreads" resultType="VreadsVO">
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		from 
+			vreads v
+			left join  
+			mem_info mi on v.mem_idx = mi.mem_idx 
+		where mem_idx = #{userIdx}
+		where vd_createDate <![CDATA[<]]> #{searchDate} 
+		order by vd_createDate desc
+		limit #{startCount}, #{setPageListLimit}
+		;
+	</select>
+
+	<!-- 특정 Vreads 하나만 불러오기-->
+	<select id="selectVreadsDetail" resultType="VreadsVO">
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		from 
+			vreads v
+			left join  
+			mem_info mi on v.mem_idx = mi.mem_idx 
+		where vreads_idx = #{vreadsIdx}
+		limit 1
+		;
+	</select>
+
+	<!-- Vreads 조건 없이 불러오기 -->
+	<select id="selectAllVreads" resultType="VreadsVO">
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		from 
+			vreads v
+			left join  
+			mem_info mi on v.mem_idx = mi.mem_idx 
+		where vd_createDate <![CDATA[<]]> #{searchDate} 
+		order by vd_createDate desc
+		limit #{startCount}, #{setPageListLimit}
+		;
+	</select>
+
+	<!-- search type 과 keyword 에 맞춰서 Vreads 불러오기-->
+	<!-- serchType -->
+	<!-- 1 = 제목검색 -->
+	<!-- 2 = 제목과 타이틀 검색 -->
+	<select id="selectSearchVreads" resultType="VreadsVO">
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		from 
+			vreads v
+			left join  
+			mem_info mi on v.mem_idx = mi.mem_idx 
+		where 
+		<if test="searchType = 2">
+			where 
+		</if>
+		where vd_createDate <![CDATA[<]]> #{searchDate} 
+		order by vd_createDate desc
+		limit #{startCount}, #{setPageListLimit}
+		;
+	</select>
+	
+</mapper>
