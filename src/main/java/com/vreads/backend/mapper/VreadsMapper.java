@@ -18,6 +18,8 @@ public interface VreadsMapper {
 	//특정 유저 Vreads 불러오기
 	List<VreadsVO> selectUserVreads(
 			@Param("userIdx") int userIdx, 
+			@Param("keyword") String keyword, 
+			@Param("searchType") int searchType,
 			@Param("searchDate") Timestamp searchDate,
 			@Param("startCount") int startCount, 
 			@Param("setPageListLimit") int setPageListLimit);
@@ -35,7 +37,6 @@ public interface VreadsMapper {
 	List<VreadsVO> selectSearchVreads(
 			@Param("keyword") String keyword, 
 			@Param("searchType") int searchType,
-			@Param("userIdx") int userIdx, 
 			@Param("searchDate") Timestamp searchDate,
 			@Param("startCount") int startCount, 
 			@Param("setPageListLimit") int setPageListLimit);

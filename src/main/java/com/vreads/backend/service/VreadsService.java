@@ -19,6 +19,13 @@ public class VreadsService {
 	int startCountInit = 0;
 	int setPageListLimitInit = 15;
 	
+	public boolean addVread(VreadsVO vread) {
+		int result = vdMapper.insertVread(vread);
+		if(result > 0)
+			return true;
+		return false;
+	}
+	
 	public List<VreadsVO> getAllVreads(){
 		Timestamp timeNow = new Timestamp(System.currentTimeMillis());
 		return vdMapper.selectAllVreads(timeNow, startCountInit, setPageListLimitInit);

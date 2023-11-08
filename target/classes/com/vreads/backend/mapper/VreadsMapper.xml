@@ -3,7 +3,7 @@
 <mapper namespace="com.vreads.backend.mapper.VreadsMapper">
 	
 	<!-- Vread 등록하기 -->
-	<insert id="insert" parameterType="VreadsVO">
+	<insert id="insertVread" parameterType="VreadsVO">
 	INSERT INTO vreads_webapp.vreads
 		(
 			vreads_idx, 
@@ -29,21 +29,38 @@
 			#{vd_media_3}, 
 			#{vd_subtag}, 
 			#{vd_comment_idx}, 
-			NULL, 
+			now(), 
 			NULL
 		);
 	</insert>
 	
 	<!-- 특정 유저 Vreads 불러오기-->
 	<!-- 부등호 사용시 <![CDATA[부등호]]> 사용 -->
+		<!-- serchType -->
+	<!-- 1 = 제목검색 -->
+	<!-- 2 = 제목과 타이틀 검색 -->
+	<!-- 3 = 서브태그 검색 -->
 	<select id="selectUserVreads" resultType="VreadsVO">
 		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
 			left join  
 			mem_info mi on v.mem_idx = mi.mem_idx 
-		where mem_idx = #{userIdx}
-		where vd_createDate <![CDATA[<]]> #{searchDate} 
+		where v.mem_idx = #{userIdx}
+			AND vd_createDate <![CDATA[<]]> #{searchDate} 
+		<if test="searchType = 1">
+			AND vd_vtTitle = #{keyword}
+		</if>
+		<if test="searchType = 2">
+			AND 
+			(
+				vd_vtTitle = #{keyword}
+				OR vd_vtDetail = #{keyword}
+			)
+		</if>
+		<if test="searchType = 3">
+			AND vd_subtag = #{keyword}
+		</if>
 		order by vd_createDate desc
 		limit #{startCount}, #{setPageListLimit}
 		;
@@ -78,17 +95,28 @@
 	<!-- serchType -->
 	<!-- 1 = 제목검색 -->
 	<!-- 2 = 제목과 타이틀 검색 -->
+	<!-- 3 = 서브태그 검색 -->
 	<select id="selectSearchVreads" resultType="VreadsVO">
 		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
 			left join  
 			mem_info mi on v.mem_idx = mi.mem_idx 
-		where 
-		<if test="searchType = 2">
-			where 
-		</if>
 		where vd_createDate <![CDATA[<]]> #{searchDate} 
+		<if test="searchType = 1">
+			AND vd_vtTitle = #{keyword}
+		</if>
+		<if test="searchType = 2">
+			AND 
+			(
+				vd_vtTitle = #{keyword}
+				OR vd_vtDetail = #{keyword}
+			)
+		</if>
+		<if test="searchType = 3">
+			AND vd_subtag = #{keyword}
+		</if>
+
 		order by vd_createDate desc
 		limit #{startCount}, #{setPageListLimit}
 		;

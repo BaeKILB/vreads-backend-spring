@@ -45,12 +45,12 @@ public class JwtUtil {
 	public static String createJwt(MemberVO member, String secretKey, Long expriendMs) {
 		// signWith 에 키 넣을때 Key 변환 해줘야함
 		Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-		System.out.println("test 1");
+
 		// jwt 담을 Claims 객체 만들기(map의 일종)
 		Claims claims = Jwts.claims();
 		claims.put("id", member.getMem_id());
 
-		System.out.println("test 2");
+
 		// jwt 키 내보내기
 		return Jwts.builder().setClaims(claims) // 정보를 담은 claims 넣고
 				.setIssuedAt(new Date(System.currentTimeMillis())) // 현재 만든 시간 지정

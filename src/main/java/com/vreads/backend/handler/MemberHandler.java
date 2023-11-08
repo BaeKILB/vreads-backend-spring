@@ -17,7 +17,8 @@ public class MemberHandler {
 	public final int MEM_MIN_EMAIL_LENGTH = 6;
 
 	public final int MEM_MAX_ID_LENGTH = 45;
-	public final int MEM_MAX_PASSWD_LENGTH = 50;
+	// 패스워드 길이가 솔팅되어 들어옴으로 60자 이상으로
+	public final int MEM_MAX_PASSWD_LENGTH = 80;
 	public final int MEM_MAX_NAME_LENGTH = 15;
 	public final int MEM_MAX_NICKNAME_LENGTH = 15;
 	public final int MEM_MAX_EMAIL_LENGTH = 45;

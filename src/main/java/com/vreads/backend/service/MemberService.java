@@ -65,6 +65,12 @@ public class MemberService {
 	    memberMapper.updateMemberWithKakao(kakaoMember);
 	    return memberMapper.findMemberById(kakaoMember.getMem_id());
 	}
+
+	// 회원 아이디로 찾기
+	@Transactional
+	public MemberVO findMember(String userId) {
+		return memberMapper.findMemberById(userId);
+	}
     
     
     // 회원가입

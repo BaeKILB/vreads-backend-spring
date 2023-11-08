@@ -6,4 +6,5 @@ public class ResEntityDto {
 	public Object data = null;
 	public String msg = "";
 	public String error = "";
+	public String nt = "";
 }

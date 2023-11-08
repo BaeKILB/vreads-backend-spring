@@ -63,7 +63,6 @@ public class JwtFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		System.out.println(authorization);
 
 		// 헤더에서 받아온 값에서 토큰 꺼내기
 		String token = authorization.split(" ")[1];
@@ -72,59 +71,64 @@ public class JwtFilter extends OncePerRequestFilter {
 		// 리프레시 토큰을 확인해 다시 토큰 받아오기
 		String newToken = "";
 
-		// 토큰 유효기간 체크
-		boolean checkExpried = JwtUtil.isExpired(token, secretKey);
-		if (checkExpried) {
-			System.out.println("cookies");
-			System.out.println(cookies);
-			// 쿠키에 리프레시토큰이 있다면 토큰 재발급
-			// 쿠키 확인
-			if (cookies != null) {
+		// 쿠키 안의 토큰 받아올 변수
+		String cookieToken = "";
+					
+		// 쿠키 확인
+		if (cookies != null) {
 
-				// 쿠키 안의 토큰 받아올 변수
-				String cookieToken = "";
+			// 쿠키는 배열로 받아오기 때문에 배열 반복문 돌려서 토큰 확인
+			for (Cookie cookie : cookies) {
 
-				// 쿠키는 배열로 받아오기 때문에 배열 반복문 돌려서 토큰 확인
-				for (Cookie cookie : cookies) {
-					if (cookie.getName() == "refreshToken") {
-						cookieToken = cookie.getValue();
-						break;
-					}
-				}
-
-				// 리프레시 토큰이 기간 다되었는지 확인
-				if (JwtUtil.isExpired(cookieToken, secretKey)) {
-					logger.error("재발급 토큰 유효기간이 만료 되었습니다!");
-					filterChain.doFilter(request, response);
-					return;
-				}
-				// 리프레시 토큰 기간 유효하면 토큰 다시 만들어 전달
-				else {
-					// 리프레시 토큰의 유저 받아오기
-					String refreshUserId = JwtUtil.getUserId(cookieToken, secretKey);
-					// 리프레시 토큰 안의 값이 이상하면 리턴
-					if(refreshUserId == null || refreshUserId.length() <= 2) {
-						logger.error("재발급 토큰 안의 데이터에 문제가 있습니다!");
-						filterChain.doFilter(request, response);
-						return;
-					}
-					// 토큰 재발급 절차
-
-					// 유효시간 지정
-					Long expiredMs = 60L * 60 * 1000;
-
-					MemberVO member = new MemberVO();
-					member.setMem_id(refreshUserId);
-					member.setMem_email(refreshUserId);
-					newToken = JwtUtil.createJwt(member, secretKey, expiredMs);
-
+				if (cookie.getName().equals("refreshToken")) {
+					cookieToken = cookie.getValue();
+					break;
 				}
 			}
-			// 쿠키 받아오지 못했을때
-			else {
+			if(cookieToken == null || cookieToken.equals("")) {				
 				logger.error("재발급 토큰을 받아오지 못했습니다!");
 				filterChain.doFilter(request, response);
 				return;
+			}
+		}
+		// 쿠키 받아오지 못했을때
+		else {
+			logger.error("재발급 토큰을 받아오지 못했습니다!");
+			filterChain.doFilter(request, response);
+			return;
+		}
+		
+		// 토큰 유효기간 체크
+		boolean checkExpried = JwtUtil.isExpired(token, secretKey);
+		if (checkExpried) {
+			// 쿠키에 리프레시토큰이 있다면 토큰 재발급
+			// 리프레시 토큰이 기간 다되었는지 확인
+			
+			if (JwtUtil.isExpired(cookieToken, secretKey)) {
+				logger.error("재발급 토큰 유효기간이 만료 되었습니다!");
+				filterChain.doFilter(request, response);
+				return;
+			}
+			// 리프레시 토큰 기간 유효하면 토큰 다시 만들어 전달
+			else {
+				// 리프레시 토큰의 유저 받아오기
+				String refreshUserId = JwtUtil.getUserId(cookieToken, secretKey);
+				// 리프레시 토큰 안의 값이 이상하면 리턴
+				if(refreshUserId == null || refreshUserId.length() <= 2) {
+					logger.error("재발급 토큰 안의 데이터에 문제가 있습니다!");
+					filterChain.doFilter(request, response);
+					return;
+				}
+				// 토큰 재발급 절차
+
+				// 유효시간 지정
+				Long expiredMs = 60L * 60 * 1000;
+
+				MemberVO member = new MemberVO();
+				member.setMem_id(refreshUserId);
+				member.setMem_email(refreshUserId);
+				newToken = JwtUtil.createJwt(member, secretKey, expiredMs);
+
 			}
 		}
 		// 토큰 안의 id 받아오기

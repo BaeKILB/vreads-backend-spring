@@ -4,6 +4,8 @@ package com.vreads.backend.vo;
 
 import java.sql.Date;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Data;
 
 /*
@@ -41,6 +43,11 @@ public class VreadsVO {
 	// join 으로 가지고오는 추가 데이터 넣기
 	private String mem_nickname;
 	private String mem_profileImageUrl;
+	
+	// 이미지 저장 객체
+	private MultipartFile file1;
+	private MultipartFile file2;
+	private MultipartFile file3;
 	
 	
 }

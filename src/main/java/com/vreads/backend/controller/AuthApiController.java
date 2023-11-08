@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +37,7 @@ import com.vreads.backend.vo.MemberVO;
 
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "http://localhost:5173") // CORS 허용을 위한 url 추가
+@CrossOrigin(origins = "http://localhost:5173, https://vreads-app.web.app/") // CORS 허용을 위한 url 추가
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(produces = "application/json; charset=UTF-8")
@@ -49,7 +49,7 @@ public class AuthApiController {
     private Long expiredMs = 60L * 60 * 1000;
     
     // 도메인 설정
-    private String vreadsDomain = ".localhost";
+    private String vreadsDomain = ".vreads-app.web.app";
 	
 	@Autowired
 	private UserInfoService userInfoService;
@@ -59,6 +59,8 @@ public class AuthApiController {
 	
 	@Autowired
 	private MemberHandler memHandler;
+	
+	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	@GetMapping("/api/auth/checkToken")
 	public String checkToken(Principal principal) {
@@ -155,8 +157,8 @@ public class AuthApiController {
     			    .maxAge(24 * 60 * 60)
     			    .path("/")
     			    .domain(vreadsDomain)
-//    			    .secure(false) // https 환경에서만 동작하는지 체크
-//    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
+    			    .secure(true) // https 환경에서만 동작하는지 체크
+    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
     			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
     			    .build();
     		response.setHeader("Set-Cookie", cookie.toString()); 
@@ -211,18 +213,20 @@ public class AuthApiController {
 		String cookieToken = "";
 		
 		Cookie[] cookies = request.getCookies();
-		for (Cookie cookie : cookies) {
-			if (cookie.getName() == "refreshToken") {
-				cookieToken = cookie.getValue();
-				break;
+		if(cookies != null) {			
+			for (Cookie cookie : cookies) {
+				if (cookie.getName() == "refreshToken") {
+					cookieToken = cookie.getValue();
+					break;
+				}
 			}
-		}
-		
-		if(cookieToken != null && cookieToken != "") {
-
-			joResult.put("state", "false");
-			joResult.put("error", "문제가 발생했습니다! : 이미 로그인 중 입니다! 로그아웃을 하시거나 브라우저를 종료후 다시 실행해주세요!");
-			return joResult.toString();
+			
+			if(cookieToken != null && cookieToken != "") {
+				
+				joResult.put("state", "false");
+				joResult.put("error", "문제가 발생했습니다! : 이미 로그인 중 입니다! 로그아웃을 하시거나 브라우저를 종료후 다시 실행해주세요!");
+				return joResult.toString();
+			}
 		}
 		
 		
@@ -312,8 +316,8 @@ public class AuthApiController {
 	    			    .maxAge(24 * 60 * 60)
 	    			    .path("/")
 	    			    .domain(vreadsDomain)
-//	    			    .secure(true) // https 환경에서만 동작하는지 체크
-//	    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
+	    			    .secure(true) // https 환경에서만 동작하는지 체크
+	    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
 	    			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
 	    			    .build();
 	    		response.setHeader("Set-Cookie", cookie.toString()); 
@@ -340,7 +344,9 @@ public class AuthApiController {
 			,@RequestBody Map<String,String> map
 //			, HttpSession httpSession
     		,HttpServletResponse response) {
-
+		System.out.println(map);
+		
+		
 		JSONObject joResult = new JSONObject();
 		MemberVO newMem = null;
 		String errorTemp = "로그인 진행중 오류가 일어났습니다";
@@ -354,18 +360,21 @@ public class AuthApiController {
 		String cookieToken = "";
 		
 		Cookie[] cookies = request.getCookies();
-		for (Cookie cookie : cookies) {
-			if (cookie.getName() == "refreshToken") {
-				cookieToken = cookie.getValue();
-				break;
-			}
-		}
 		
-		if(cookieToken != null && cookieToken != "") {
-
-			joResult.put("state", "false");
-			joResult.put("error", "문제가 발생했습니다! : 이미 로그인 중 입니다! 로그아웃을 하시거나 브라우저를 종료후 다시 실행해주세요!");
-			return joResult.toString();
+		if(cookies != null) {				
+			for (Cookie cookie : cookies) {
+				if (cookie.getName() == "refreshToken") {
+					cookieToken = cookie.getValue();
+					break;
+				}
+			}
+			
+			if(cookieToken != null && cookieToken != "") {
+				
+				joResult.put("state", "false");
+				joResult.put("error", "문제가 발생했습니다! : 이미 로그인 중 입니다! 로그아웃을 하시거나 브라우저를 종료후 다시 실행해주세요!");
+				return joResult.toString();
+			}
 		}
 		
 		// 현재 로그인 할때 email 을 아이디로 사용하고 있음
@@ -392,7 +401,18 @@ public class AuthApiController {
 			errorTemp = "문제가 발생했습니다! : 현재 존재하지 않는 아이디 입니다";
 	    	isError=true;
 	    }
-		
+		MemberVO memberEntity = memberService.selectMember(newMem.getMem_id()); // 신규 회원 가입 후 mem_idx를 포함한 회원 정보를 조회  
+		// 비밀번호 체크
+		// 받아온 비밀번호 encode 돌리기
+		System.out.println("pass origin : " + map.get("passwd"));
+		String encodePasswd = bCryptPasswordEncoder.encode(map.get("passwd"));
+
+		System.out.println("encode pass : " + encodePasswd);
+		System.out.println("mem pass : " + memberEntity.getMem_passwd());
+		if(!bCryptPasswordEncoder.matches(map.get("passwd"), memberEntity.getMem_passwd())) {
+			errorTemp = "문제가 발생했습니다! : 비밀번호가 맞지 않습니다";
+	    	isError=true;
+		}
 	    // 로그인 유효성 검사 
 		if (isError) {
 			logger.error("LoginPro : " + errorTemp);
@@ -401,8 +421,7 @@ public class AuthApiController {
 	    } else {
 	    	try {	    		
 	    		
-	    		MemberVO memberEntity = memberService.selectMember(newMem.getMem_id()); // 신규 회원 가입 후 mem_idx를 포함한 회원 정보를 조회          
-	    		
+
 	    		//jwt 방식
 	    		String resultJwt = userInfoService.makeJwt(memberEntity,expiredMs);
 	    		System.out.println(resultJwt);
@@ -421,8 +440,8 @@ public class AuthApiController {
 	    			    .maxAge(24 * 60 * 60)
 	    			    .path("/")
 	    			    .domain(vreadsDomain)
-//	    			    .secure(true) // https 환경에서만 동작하는지 체크
-//	    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
+	    			    .secure(true) // https 환경에서만 동작하는지 체크
+	    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
 	    			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
 	    			    .build();
 	    		response.setHeader("Set-Cookie", cookie.toString()); 
@@ -454,8 +473,8 @@ public class AuthApiController {
     			    .maxAge(0)
     			    .path("/")
     			    .domain(vreadsDomain)
-//    			    .secure(true) // https 환경에서만 동작하는지 체크
-//    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
+    			    .secure(true) // https 환경에서만 동작하는지 체크
+    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
     			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
     			    .build();
     		response.setHeader("Set-Cookie", cookie.toString()); 
