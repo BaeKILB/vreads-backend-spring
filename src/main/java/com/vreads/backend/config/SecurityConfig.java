@@ -52,8 +52,8 @@ public class SecurityConfig {
     	CorsConfiguration config = new CorsConfiguration();
     	
     	// 다른 url 사이트에서 쿠키, json 보내기 위해 허용해주는 설정
-    	config.addAllowedOrigin("http://localhost:5173");
     	config.addAllowedOrigin("https://vreads-app.web.app");
+    	config.addAllowedOrigin("http://localhost:5173");
     	config.addAllowedHeader("*");
     	config.addAllowedMethod("*");
     	config.setAllowCredentials(true); // 이걸 추가해야 쿠키 담기 가능
@@ -74,7 +74,7 @@ public class SecurityConfig {
 		.cors().configurationSource(corsConf())
 		.and()
 		.authorizeRequests()
-		.antMatchers("/login/api/CreateUserPro","/login/api/LoginPro","login/api/LogoutPro" ,"/login/oauth2/code/google").permitAll()
+		.antMatchers("/login/api/CreateUserPro","/login/api/LoginPro","login/api/LogoutPro" ,"/login/oauth2/code/google","/resources/**").permitAll()
 		.antMatchers("/api/**").authenticated()
 		.and()
 		.sessionManagement()

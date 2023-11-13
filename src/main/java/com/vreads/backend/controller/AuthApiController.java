@@ -47,9 +47,6 @@ public class AuthApiController {
 	
     // 유효시간 지정
     private Long expiredMs = 60L * 60 * 1000;
-    
-    // 도메인 설정
-    private String vreadsDomain = ".vreads-app.web.app";
 	
 	@Autowired
 	private UserInfoService userInfoService;
@@ -131,32 +128,19 @@ public class AuthApiController {
     		jo.put("state", "true");
     		jo.put("error", "");
     		jo.put("token", resultJwt);
+    		jo.put("userPhoto", member.getMem_profileImageUrl());
+    		jo.put("uid", member.getMem_idx());
     		
     		// 쿠키로 refresh 토큰 만들기
     		Long refreshExpiredMs = 24L* 60 * 60 * 1000;
     		//jwt 만들기
     		String refreshToken = userInfoService.makeJwt(member,refreshExpiredMs);
     		
-//    		cookie =  new Cookie();
-//    		// 쿠키 셋팅
-//    		cookie.setSecure(true);
-//    		// http only 로 두어서 수정 못하게 막기
-//    		cookie.setHttpOnly(true);
-//    		cookie.setPath("/");
-//    		cookie.setName("token");
-//    		cookie.setComment(refreshJwt);
-    		
-//    		LocalTime time1 = LocalTime.of(0, 0,0);
-//    		LocalTime time2 = LocalTime.of(12, 0,0);
-//    		
-//    		Duration duration = Duration.between(time1,time2 );
-//    		cookie.setMaxAge(duration);
-    		
     		// 쿠키보내기
     		ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
     			    .maxAge(24 * 60 * 60)
     			    .path("/")
-    			    .domain(vreadsDomain)
+//    			    .domain(vreadsDomain)
     			    .secure(true) // https 환경에서만 동작하는지 체크
     			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
     			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
@@ -289,14 +273,6 @@ public class AuthApiController {
 	    		
 	    		memberService.registMember(newMem);
 	    		MemberVO memberEntity = memberService.selectMember(newMem.getMem_id()); // 신규 회원 가입 후 mem_idx를 포함한 회원 정보를 조회
-	            
-	    		// 로그인 처리
-//	    		PrincipalDetails user = new PrincipalDetails(memberEntity);
-//	    		Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-//	    		SecurityContextHolder.getContext().setAuthentication(authentication);
-//	    		httpSession.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
-//	    		joResult.put("state", "true");
-//	    		joResult.put("error", "");
 	    		
 	    		//jwt 방식
 	    		String resultJwt = userInfoService.makeJwt(memberEntity,expiredMs);
@@ -304,6 +280,8 @@ public class AuthApiController {
 	    		joResult.put("state", "true");
 	    		joResult.put("error", "");
 	    		joResult.put("token", resultJwt);
+	    		joResult.put("userPhoto", memberEntity.getMem_profileImageUrl());
+	    		joResult.put("uid", memberEntity.getMem_idx());
 	    		
 	    		// 쿠키로 refresh 토큰 만들기
 	    		expiredMs = 24L* 60 * 60 * 1000;
@@ -315,7 +293,7 @@ public class AuthApiController {
 	    		ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
 	    			    .maxAge(24 * 60 * 60)
 	    			    .path("/")
-	    			    .domain(vreadsDomain)
+//	    			    .domain(vreadsDomain)
 	    			    .secure(true) // https 환경에서만 동작하는지 체크
 	    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
 	    			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
@@ -403,12 +381,7 @@ public class AuthApiController {
 	    }
 		MemberVO memberEntity = memberService.selectMember(newMem.getMem_id()); // 신규 회원 가입 후 mem_idx를 포함한 회원 정보를 조회  
 		// 비밀번호 체크
-		// 받아온 비밀번호 encode 돌리기
-		System.out.println("pass origin : " + map.get("passwd"));
-		String encodePasswd = bCryptPasswordEncoder.encode(map.get("passwd"));
 
-		System.out.println("encode pass : " + encodePasswd);
-		System.out.println("mem pass : " + memberEntity.getMem_passwd());
 		if(!bCryptPasswordEncoder.matches(map.get("passwd"), memberEntity.getMem_passwd())) {
 			errorTemp = "문제가 발생했습니다! : 비밀번호가 맞지 않습니다";
 	    	isError=true;
@@ -420,14 +393,15 @@ public class AuthApiController {
 			joResult.put("error", errorTemp);
 	    } else {
 	    	try {	    		
-	    		
-
+	    	
 	    		//jwt 방식
 	    		String resultJwt = userInfoService.makeJwt(memberEntity,expiredMs);
 	    		System.out.println(resultJwt);
 	    		joResult.put("state", "true");
 	    		joResult.put("error", "");
 	    		joResult.put("token", resultJwt);
+	    		joResult.put("userPhoto", memberEntity.getMem_profileImageUrl());
+	    		joResult.put("uid", memberEntity.getMem_idx());
 	    		
 	    		// 쿠키로 refresh 토큰 만들기
 	    		expiredMs = 24L* 60 * 60 * 1000;
@@ -439,7 +413,7 @@ public class AuthApiController {
 	    		ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
 	    			    .maxAge(24 * 60 * 60)
 	    			    .path("/")
-	    			    .domain(vreadsDomain)
+//	    			    .domain(vreadsDomain)
 	    			    .secure(true) // https 환경에서만 동작하는지 체크
 	    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
 	    			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
@@ -472,7 +446,7 @@ public class AuthApiController {
     		ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
     			    .maxAge(0)
     			    .path("/")
-    			    .domain(vreadsDomain)
+//    			    .domain(vreadsDomain)
     			    .secure(true) // https 환경에서만 동작하는지 체크
     			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
     			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기

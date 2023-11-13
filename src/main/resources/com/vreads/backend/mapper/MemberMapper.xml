@@ -183,7 +183,7 @@
 
 	
 	<!-- 마이페이지 - 프로필 관리 셀렉 -->
-	<select id="selectProfileMember" resultType="map">
+	<select id="selectProfileMember" resultType="com.vreads.backend.vo.MemberVO">
 		SELECT * FROM mem_info
 		WHERE
 		mem_idx = #{sId}
@@ -223,6 +223,16 @@
 		WHERE mem_idx = #{sId}
 	</update>
 	
-	
+	<!-- ============= Vreads ============== -->
+	<!-- 검색어에 해당하는 유저 리스트 불러오기 -->
+	<select id="selectSearchMember" resultType="com.vreads.backend.vo.MemberVO">
+		SELECT * FROM mem_info
+		WHERE
+			mem_nickname LIKE #{keyword}
+			AND
+			mem_sign_date <![CDATA[<]]> #{searchDate}
+		LIMIT #{startCount}, #{setPageListLimit}
+			
+	</select>
 	
 </mapper>

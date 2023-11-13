@@ -30,6 +30,8 @@ public class VreadsFileApiController {
 	String backUrlFolder;
 	@Value("${localUploadDir}")
 	String localUploadDir;
+	@Value("${userProfileDir}")
+	String userProfileDir;
 	
 	// vreads 에 사용될 각종 파일들의 전송 처리를 담당
 	@GetMapping("/resources/upload/vreads/{year}/{month}/{day}/{filename}")
@@ -62,4 +64,38 @@ public class VreadsFileApiController {
 		
 		return entity;
 	}
+	
+	// 유저 프로필 사진 출력
+	@GetMapping("/resources/users/profileimg/{year}/{month}/{day}/{filename}")
+	public ResponseEntity<byte[]> userProfileimg(@PathVariable("year")String year,
+			@PathVariable("month")String month,
+			@PathVariable("day")String day,
+			@PathVariable("filename")String filename) {
+		
+		//파일이 저장된 경로
+		String savename = userProfileDir +"/"+ year+"/"+month+"/"+day+"/"+ filename;
+		File file = new File(savename);
+		
+		//저장된 이미지파일의 이진데이터 형식을 구함
+		byte[] result=null;//1. data
+		ResponseEntity<byte[]> entity=null;
+		
+		try {
+	    	result = FileCopyUtils.copyToByteArray(file);
+			
+			//2. header
+			HttpHeaders header = new HttpHeaders();
+			header.add("Content-type",Files.probeContentType(file.toPath())); //파일의 컨텐츠타입을 직접 구해서 header에 저장
+				
+			//3. 응답본문
+			entity = new ResponseEntity<>(result,header,HttpStatus.OK);//데이터, 헤더, 상태값
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return entity;
+	}
+	
 }
+
+

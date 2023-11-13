@@ -5,18 +5,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +47,13 @@ public class MemberService {
     
     @Autowired
     private FollowMapper followMapper;
+    
+    @Value("${userDir}")
+    private String userDir;
+    @Value("${backUrlFolder}")
+    private String backUrlFolder;
+    @Value("${backUrl}")
+    private String backUrl;
     
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     
@@ -84,7 +95,7 @@ public class MemberService {
         member.setMem_account_auth("N"); // 계좌 디폴트
 //        member.setMem_status("1"); // 멤버 상태 디폴트
         member.setMem_bio("반갑습니다."); // 멤버 상태 디폴트
-        member.setMem_profileImageUrl("default_profile_image_url"); // 
+        member.setMem_profileImageUrl(""); // 
 //        System.out.println(member.getMem_mtel());
 //        System.out.println(member.getMem_address());
 //        System.out.println(member.getMem_birthday());
@@ -180,58 +191,90 @@ public class MemberService {
 	
 	// --------------- 마이페이지 ---------------
 	// 프로필 관리
-	public Map<String, Object> getProfileMember(int sId) {
+	public MemberVO getProfileMember(int sId) {
 		return memberMapper.selectProfileMember(sId);
 	}
 	
-	// 프로필 사진 변경
-	public void ProfileUpload(MemberVO member, PrincipalDetails mPrincipalDetails, HttpSession session) {
-		member.setMem_idx(mPrincipalDetails.getMember().getMem_idx());
-		member.setMem_nickname(member.getMem_nickname());
-		member.setMem_bio(member.getMem_bio());
-		member.setMem_profileImageUrl("");
+	// 프로필 사진 변경 및 정보 변경
+	/*
+	 * uid 나 id 로 member 정보 찾은 뒤 변경할 부분만 변경 해 주기
+	 * 
+	 * 이미지 변경 시 밖에서 MemberVO 객체의 getFile 에 이미지 파일 넣기
+	 * */
+	public boolean profileUpload(MemberVO member, boolean isPhotoUpdate) {
 		
-		String uploadDir = "/resources/upload/profile";
-		String saveDir = session.getServletContext().getRealPath(uploadDir);
+		
+		String saveDir = "/" + backUrlFolder + userDir;
 		String subDir = ""; // 서브디렉토리(날짜 구분)
 		
 		try {
-			Date date = new Date(); // Mon Jun 19 11:26:52 KST 2023
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-			subDir = sdf.format(date);
-			saveDir += "/" + subDir;
-			Path path = Paths.get(saveDir);
-			Files.createDirectories(path);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	           Date date = new Date();
+	           SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+	           subDir = sdf.format(date);
+	           saveDir +=  subDir;
+	           Path path = Paths.get(saveDir);
+	           Files.createDirectories(path);
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
 		
+		// MemberVO 에 만들어둔 이미지 객체 보내기
 		MultipartFile mFile = member.getFile();
-		String uuid = UUID.randomUUID().toString();
-		member.setMem_profileImageUrl("");
-		String fileName = uuid.substring(0, 8) + "_" + mFile.getOriginalFilename();
-		
-		if(!mFile.getOriginalFilename().equals("")) {
-			member.setMem_profileImageUrl(subDir + "/" + fileName);
-		} 
-		
-		System.out.println("실제 업로드 파일명1 : " + member.getMem_profileImageUrl());	
+		String fileName = "";
+		// 포토 업데이트 때만 동작
+		if(isPhotoUpdate || mFile != null) {			
+			// 파일명 중복방지 UUID
+			String uuid = UUID.randomUUID().toString();
+			// 이미지 명 초기화
+			member.setMem_profileImageUrl("");
+			// 위의 UUID 를 붙여 중복 방지
+			fileName = uuid.substring(0, 8) + "_" + mFile.getOriginalFilename();
+			
+			// MemberVO 에 들어갈 경로 셋팅
+			if(!mFile.getOriginalFilename().equals("")) {
+				member.setMem_profileImageUrl(backUrl + saveDir + "/" + fileName);
+			} 
+			
+			System.out.println("실제 업로드 파일명1 : " + member.getMem_profileImageUrl());	
+		}
 
 		int updateCount = memberMapper.updateProfile(member);
+		
+		//이미지 업로드
 		if(updateCount > 0) { // 성공
 			try {
-				if(!mFile.getOriginalFilename().equals("")) {
+				if(isPhotoUpdate && !mFile.getOriginalFilename().equals("")) {
 					mFile.transferTo(new File(saveDir, fileName));
 				}
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
+				return false;
 			} catch (IOException e) {
 				e.printStackTrace();
+				return false;
 			}
 		} else { // 실패
 			throw new CustomValidationException("오류가 발생했습니다.", null);
 		}
 		
+		return true;
+		
+	
+	}
+	
+	// 유저 명 검색
+	public List<MemberVO> getUserSearch(
+			String keyword,
+			Timestamp searchDate,
+			int startCount, 
+			int setPageListLimit){
+
+		Timestamp timeNow = new Timestamp(System.currentTimeMillis());
+		if(searchDate != null) {
+			timeNow = searchDate;
+		}
+		String fixKeyword = "%" + keyword + "%";
+		return memberMapper.selectSearchMember(fixKeyword, timeNow, startCount, setPageListLimit);
 	}
 	
 	

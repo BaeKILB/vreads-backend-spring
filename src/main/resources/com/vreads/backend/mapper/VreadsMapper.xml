@@ -48,17 +48,17 @@
 			mem_info mi on v.mem_idx = mi.mem_idx 
 		where v.mem_idx = #{userIdx}
 			AND vd_createDate <![CDATA[<]]> #{searchDate} 
-		<if test="searchType = 1">
-			AND vd_vtTitle = #{keyword}
+		<if test="searchType == 1">
+			AND vd_vtTitle LIKE #{keyword}
 		</if>
-		<if test="searchType = 2">
+		<if test="searchType == 2">
 			AND 
 			(
-				vd_vtTitle = #{keyword}
-				OR vd_vtDetail = #{keyword}
+				vd_vtTitle LIKE #{keyword}
+				OR vd_vtDetail LIKE #{keyword}
 			)
 		</if>
-		<if test="searchType = 3">
+		<if test="searchType == 3">
 			AND vd_subtag = #{keyword}
 		</if>
 		order by vd_createDate desc
@@ -67,7 +67,7 @@
 	</select>
 
 	<!-- 특정 Vreads 하나만 불러오기-->
-	<select id="selectVreadsDetail" resultType="VreadsVO">
+	<select id="selectVreadDetail" resultType="VreadsVO">
 		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
@@ -103,17 +103,17 @@
 			left join  
 			mem_info mi on v.mem_idx = mi.mem_idx 
 		where vd_createDate <![CDATA[<]]> #{searchDate} 
-		<if test="searchType = 1">
-			AND vd_vtTitle = #{keyword}
+		<if test="searchType == 1">
+			AND vd_vtTitle LIKE #{keyword}
 		</if>
-		<if test="searchType = 2">
+		<if test="searchType == 2">
 			AND 
 			(
-				vd_vtTitle = #{keyword}
-				OR vd_vtDetail = #{keyword}
+				vd_vtTitle LIKE #{keyword}
+				OR vd_vtDetail LIKE #{keyword}
 			)
 		</if>
-		<if test="searchType = 3">
+		<if test="searchType == 3">
 			AND vd_subtag = #{keyword}
 		</if>
 

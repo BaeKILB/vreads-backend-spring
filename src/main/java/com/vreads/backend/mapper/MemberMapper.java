@@ -1,5 +1,7 @@
 package com.vreads.backend.mapper;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -68,7 +70,7 @@ public interface MemberMapper {
 	int changePw(MemberVO member);
 	
 // ------------------ 마이페이지 / 프로필 관리 -------------------
-	Map<String, Object> selectProfileMember(int sId);
+	MemberVO selectProfileMember(int sId);
 	
 	// 마이페이지 프로필 변경
 	int updateProfile(MemberVO member);
@@ -84,6 +86,15 @@ public interface MemberMapper {
 	int deleteMember(@Param("sId") int sId);
 
 	
+	// ============================== Vreads =======================
+	// 검색어에 해당하는 유저 리스트 불러오기
+	List<MemberVO> selectSearchMember(
+			@Param("keyword") String keyword, 
+			@Param("searchDate") Timestamp searchDate,
+			@Param("startCount") int startCount, 
+			@Param("setPageListLimit") int setPageListLimit
+			);
+
 
 	
 
