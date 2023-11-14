@@ -2,6 +2,7 @@ package com.vreads.backend.service;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +32,25 @@ public class VreadsService {
 		return false;
 	}
 	
-	public List<VreadsVO> getAllVreads(){
+	public boolean updateVreadService(VreadsVO vread) {
+		int result = vdMapper.updateVread(vread);
+		if(result > 0)
+			return true;
+		return false;
+	}
+	
+	public boolean removeVread(Long vreads_idx) {
+		int result = vdMapper.deleteVread(vreads_idx);
+		if(result > 0)
+			return true;
+		return false;
+	}
+	
+	public List<VreadsVO> getAllVreads(
+			int startCount, 
+			int setPageListLimit){
 		Timestamp timeNow = new Timestamp(System.currentTimeMillis());
-		return vdMapper.selectAllVreads(timeNow, START_COUNT_INIT, SET_PAGE_LIST_LIMIT_INIT);
+		return vdMapper.selectAllVreads(timeNow, startCount, setPageListLimit);
 	}
 	
 	//특정 유저 Vreads 불러오기
@@ -83,4 +100,27 @@ public class VreadsService {
 		return vdMapper.selectVreadDetail(vreadIdx);
 	}
 	
+	//search type 과 keyword 에 맞춰서 Subtag 이름과 해당 subtag 의 갯수 불러오기
+	/*
+	 * 유의사항
+	 * 
+	 * 0 번의 경우 searchDate 보다 최근의 정보를 불러옴
+	 * 
+	 * 0 번 사용시 userIdx 널 스트링으로
+	 * 
+	 * 	<!-- serchType -->
+	<!-- 0 = 전체 subtag 인기순 정렬 검색-->
+	<!-- 1 = userIdx 로 특정 유저의 vread subtag 검색-->
+	 * */
+	public List<Map<String,String>> getSubtagList(
+			int uid,
+			int searchType,
+			int startCount, 
+			int setPageListLimit
+			){
+		// 0번에 사용될 날짜값 계산
+		// 30일 차이로 고정
+		Timestamp timeNow = new Timestamp(System.currentTimeMillis() - (30 * 24 * 60 * 60 * 1000L));
+		return vdMapper.selectSubtagList(uid, searchType, timeNow, startCount, setPageListLimit);
+	}
 }

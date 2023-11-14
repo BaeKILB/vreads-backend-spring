@@ -34,6 +34,22 @@
 		);
 	</insert>
 	
+	<!-- Vread 업데이트 -->
+		<update id="updateVread" parameterType="VreadsVO">
+		  UPDATE vreads 
+		  SET vd_vtTitle=#{vd_vtTitle}
+		  	, vd_vtDetail=#{vd_vtDetail}
+		  	, vd_media_1=#{vd_media_1}
+		  	, vd_modifyDate= now()
+		  WHERE vreads_idx = #{vreads_idx}
+		</update>
+	
+	<!-- Vread 삭제 처리 -->
+	<delete id="deleteVread">
+		DELETE FROM vreads
+			WHERE vreads_idx = #{vreads_idx}
+	</delete>
+	
 	<!-- 특정 유저 Vreads 불러오기-->
 	<!-- 부등호 사용시 <![CDATA[부등호]]> 사용 -->
 		<!-- serchType -->
@@ -41,7 +57,7 @@
 	<!-- 2 = 제목과 타이틀 검색 -->
 	<!-- 3 = 서브태그 검색 -->
 	<select id="selectUserVreads" resultType="VreadsVO">
-		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl , vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
 			left join  
@@ -68,7 +84,7 @@
 
 	<!-- 특정 Vreads 하나만 불러오기-->
 	<select id="selectVreadDetail" resultType="VreadsVO">
-		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl , vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
 			left join  
@@ -80,7 +96,7 @@
 
 	<!-- Vreads 조건 없이 불러오기 -->
 	<select id="selectAllVreads" resultType="VreadsVO">
-		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl , vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
 			left join  
@@ -97,7 +113,7 @@
 	<!-- 2 = 제목과 타이틀 검색 -->
 	<!-- 3 = 서브태그 검색 -->
 	<select id="selectSearchVreads" resultType="VreadsVO">
-		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl "userPhoto", vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
+		select vreads_idx, v.mem_idx , mem_nickname ,mem_profileImageUrl , vd_vtTitle, vd_vtDetail, vd_media_1, vd_media_2, vd_media_3, vd_subtag, vd_comment_idx, vd_createDate, vd_modifyDate  
 		from 
 			vreads v
 			left join  
@@ -120,6 +136,21 @@
 		order by vd_createDate desc
 		limit #{startCount}, #{setPageListLimit}
 		;
+	</select>
+	
+	<select id="selectSubtagList" resultType="map">
+		select vd_subtag, COUNT(*) as vd_subtag_count 
+		from vreads v 
+		where vd_subtag != "" 
+		<if test="searchType == 0">
+			AND vd_createDate <![CDATA[>]]> #{searchDate}
+		</if>
+		<if test="searchType == 1">
+			AND mem_idx = #{userIdx}
+		</if> 
+		group by vd_subtag 
+		order by vd_subtag_count desc
+		limit #{startCount}, #{setPageListLimit}
 	</select>
 	
 </mapper>
