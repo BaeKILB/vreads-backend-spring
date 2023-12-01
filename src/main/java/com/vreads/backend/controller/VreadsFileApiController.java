@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 
 
-@CrossOrigin(origins = "http://localhost:5173, https://vreads-app.web.app/") // CORS 허용을 위한 url 추가
+@CrossOrigin(origins = "http://localhost:5173, https://vreads-app.web.app/, https://vreads-app.web.app") // CORS 허용을 위한 url 추가
 @RestController
 public class VreadsFileApiController {
 	
