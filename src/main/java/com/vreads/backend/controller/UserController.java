@@ -61,25 +61,32 @@ public class UserController {
 
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
-
+		
+		String userId = "";
+		
+		// 만약 로그인 안했을시 userId 에 빈 값만 넘기고 통과
 		if (principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto, header, HttpStatus.SC_FORBIDDEN);
+			logger.error("인증 정보가 없습니다! - 통과");
+		}
+		else {			
+			// 토큰에서 받아온 정보
+			authMap = memHandler.splitPrincipal(principal.getName());
+			userId = authMap.get("userId");
 		}
 
-		// 토큰에서 받아온 정보
-		authMap = memHandler.splitPrincipal(principal.getName());
 
-		String userId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
 
-		// 위에서 가져온 아이디로 MemberVO 가져오기
-		MemberVO authMember = memService.findMember(userId);
 		String uidStr = map.get("uidStr");
 		int uid = -1;
 		if (uidStr == null || uidStr.equals("")) {
+			// 위에서 가져온 아이디로 MemberVO 가져오기
+			MemberVO authMember = memService.findMember(userId);
+			// 만약 로그인 되어있지 않거나 없는 회원이라 값을 찾지못하면 오류
+			if(authMember == null) {
+				resDto.state = "false";
+				resDto.error = "로그인 되어있지 않거나 없는 회원입니다!";
+				return new ResponseEntity<>(resDto, header, HttpStatus.SC_FORBIDDEN);
+			}
 			uid = authMember.getMem_idx();
 		} else {
 			try {
@@ -205,19 +212,22 @@ public class UserController {
 
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
-		Map<String, String> authMap = new HashMap<String, String>();
+		
+		// 로그인 안해도 Bakers(유저) 검색할수 있게 변경
+		
+//		Map<String, String> authMap = new HashMap<String, String>();
+		
+//		if (principal == null) {
+//			logger.error("인증 정보가 없습니다!");
+//			resDto.state = "false";
+//			resDto.error = "인증 정보가 없습니다!";
+//			return new ResponseEntity<>(resDto, header, HttpStatus.SC_FORBIDDEN);
+//		}
+//
+//		authMap = memHandler.splitPrincipal(principal.getName());
 
-		if (principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto, header, HttpStatus.SC_FORBIDDEN);
-		}
-
-		authMap = memHandler.splitPrincipal(principal.getName());
-
-		String authUserId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
+//		String authUserId = authMap.get("userId");
+//		String newToken = authMap.get("newToken");
 
 		// db 검색시 이용할 값 셋팅
 		String keyword = map.get("keyword");

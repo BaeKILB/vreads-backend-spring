@@ -74,8 +74,19 @@ public class SecurityConfig {
 		.cors().configurationSource(corsConf())
 		.and()
 		.authorizeRequests()
-		.antMatchers("/login/api/CreateUserPro","/login/api/LoginPro","login/api/LogoutPro" ,"/login/oauth2/code/google","/resources/**").permitAll()
-		.antMatchers("/api/**").authenticated()
+		.antMatchers("/login/api/CreateUserPro"
+				,"/login/api/LoginPro"
+				,"login/api/LogoutPro" 
+				,"/login/oauth2/code/google"
+				,"/api/userInfo"
+				,"/api/userInfo/getUserList"
+				,"/api/vread/all"
+				,"/api/vread/user"
+				,"/api/vread/search"
+				,"/api/vread/detail"
+				,"/api/vread/subtagList"
+				,"/resources/**").permitAll()
+		.antMatchers("/api/**","/login/api/RemoveMember").authenticated()
 		.and()
 		.sessionManagement()
 		.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

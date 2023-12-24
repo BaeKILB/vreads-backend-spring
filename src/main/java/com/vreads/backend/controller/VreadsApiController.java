@@ -109,20 +109,21 @@ public class VreadsApiController {
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
 		List<VreadsVO> vreads = null;
-		Map<String,String> jo = new HashMap<String,String>();		
-		Map<String, String> authMap = new HashMap<String, String>();
+//		Map<String,String> jo = new HashMap<String,String>();		
+//		Map<String, String> authMap = new HashMap<String, String>();
 		
-		if(principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
-		}
+		// 로그인 안해도 Vreads 볼수있게 변경
+//		if(principal == null) {
+//			logger.error("인증 정보가 없습니다!");
+//			resDto.state = "false";
+//			resDto.error = "인증 정보가 없습니다!";
+//			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
+//		}
 		
-		authMap = memHandler.splitPrincipal(principal.getName());
+//		authMap = memHandler.splitPrincipal(principal.getName());
 		
-		String userId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
+//		String userId = authMap.get("userId");
+//		String newToken = authMap.get("newToken");
 		
 		// 값 limit 가져오기
 		int startCount = vdService.START_COUNT_INIT;
@@ -174,20 +175,21 @@ public class VreadsApiController {
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
 		List<VreadsVO> vreads = null;
-		Map<String,String> jo = new HashMap<String,String>();		
-		Map<String, String> authMap = new HashMap<String, String>();
 		
-		if(principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
-		}
-		
-		authMap = memHandler.splitPrincipal(principal.getName());
-		
-		String authUserId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
+		// 로그인 안해도 유저의 Vread 검색할수 있게 변경
+//		Map<String, String> authMap = new HashMap<String, String>();
+
+//		if(principal == null) {
+//			logger.error("인증 정보가 없습니다!");
+//			resDto.state = "false";
+//			resDto.error = "인증 정보가 없습니다!";
+//			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
+//		}
+//		
+//		authMap = memHandler.splitPrincipal(principal.getName());
+//		
+//		String authUserId = authMap.get("userId");
+//		String newToken = authMap.get("newToken");
 		
 		// db 검색시 이용할 값 셋팅
 		String userId = map.get("userId");
@@ -271,20 +273,19 @@ public class VreadsApiController {
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
 		List<VreadsVO> vreads = null;
-		Map<String,String> jo = new HashMap<String,String>();		
-		Map<String, String> authMap = new HashMap<String, String>();
 		
-		if(principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
-		}
+		// 로그인 안해도 Vreads 검색할수있게 변경
+//		Map<String, String> authMap = new HashMap<String, String>();
+//		
+//		if(principal == null) {
+//			logger.error("인증 정보가 없습니다!");
+//			resDto.state = "false";
+//			resDto.error = "인증 정보가 없습니다!";
+//			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
+//		}
+//		
+//		authMap = memHandler.splitPrincipal(principal.getName());
 		
-		authMap = memHandler.splitPrincipal(principal.getName());
-		
-		String authUserId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
 		
 		// db 검색시 이용할 값 셋팅
 		String keyword = map.get("keyword");
@@ -334,20 +335,23 @@ public class VreadsApiController {
 		
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
-		VreadsVO vread = null;		
-		Map<String, String> authMap = new HashMap<String, String>();
+		VreadsVO vread = null;
 		
-		if(principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
-		}
+		// 로그인 안해도 Vread 디테일 볼수있게 수정
 		
-		authMap = memHandler.splitPrincipal(principal.getName());
-		
-		String authUserId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
+//		Map<String, String> authMap = new HashMap<String, String>();
+//		
+//		if(principal == null) {
+//			logger.error("인증 정보가 없습니다!");
+//			resDto.state = "false";
+//			resDto.error = "인증 정보가 없습니다!";
+//			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
+//		}
+//		
+//		authMap = memHandler.splitPrincipal(principal.getName());
+//		
+//		String authUserId = authMap.get("userId");
+//		String newToken = authMap.get("newToken");
 		
 		// db 검색시 이용할 값 셋팅
 		String vreads_idxStr = map.get("vreads_idx");
@@ -394,19 +398,22 @@ public class VreadsApiController {
 		// ResponseEntity 로 값을 내보내기위한 전용 Dto
 		ResEntityDto resDto = new ResEntityDto();
 		List<Map<String,String>> subTagList = null;		
-		Map<String, String> authMap = new HashMap<String, String>();
 		
-		if(principal == null) {
-			logger.error("인증 정보가 없습니다!");
-			resDto.state = "false";
-			resDto.error = "인증 정보가 없습니다!";
-			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
-		}
+		// 로그인 안해도 서브태그 검색할수있게 수정
 		
-		authMap = memHandler.splitPrincipal(principal.getName());
-		
-		String authUserId = authMap.get("userId");
-		String newToken = authMap.get("newToken");
+//		Map<String, String> authMap = new HashMap<String, String>();
+//		
+//		if(principal == null) {
+//			logger.error("인증 정보가 없습니다!");
+//			resDto.state = "false";
+//			resDto.error = "인증 정보가 없습니다!";
+//			return new ResponseEntity<>(resDto,header,HttpStatus.SC_FORBIDDEN);	
+//		}
+//		
+//		authMap = memHandler.splitPrincipal(principal.getName());
+//		
+//		String authUserId = authMap.get("userId");
+//		String newToken = authMap.get("newToken");
 		
 		// db 검색시 이용할 값 셋팅
 		

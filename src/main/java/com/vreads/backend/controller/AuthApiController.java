@@ -1,39 +1,41 @@
 package com.vreads.backend.controller;
 
+import java.nio.charset.Charset;
 import java.security.Principal;
-
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vreads.backend.config.PrincipalDetails;
 import com.vreads.backend.handler.MemValidation;
 import com.vreads.backend.handler.MemberHandler;
 import com.vreads.backend.service.MemberService;
 import com.vreads.backend.service.UserInfoService;
-import com.vreads.backend.utils.JwtUtil;
 import com.vreads.backend.vo.MemberVO;
+import com.vreads.backend.vo.ResEntityDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -60,7 +62,9 @@ public class AuthApiController {
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	@GetMapping("/api/auth/checkToken")
-	public String checkToken(Principal principal) {
+	public String checkToken( Principal principal) {
+		
+		
 		JSONObject jo = new JSONObject();
 		
 		Map<String,String> getName = memHandler.splitPrincipal(principal.getName());
@@ -461,6 +465,72 @@ public class AuthApiController {
 			jo.put("error","로그아웃 중 문제가 발생하였습니다!");
 		}
 		return jo.toString();
+	}
+	
+	// 회원탈퇴
+	@DeleteMapping("/login/api/RemoveMember")
+	public ResponseEntity<ResEntityDto> removeMember(Principal principal, HttpServletResponse response) {
+		Map<String, String> authMap = new HashMap<String, String>();
+		
+		HttpHeaders header = new HttpHeaders();
+		header.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+		
+		ResEntityDto rd = new ResEntityDto();
+		
+		System.out.println(principal);
+		
+		if (principal == null) {
+			logger.error("인증 정보가 없습니다!");
+			rd.state="auth_token_error";
+			rd.error = "인증 정보가 없습니다!";
+			return new ResponseEntity<>(rd, header, HttpStatus.SC_FORBIDDEN);
+		}
+		
+		authMap = memHandler.splitPrincipal(principal.getName());
+		
+		String userId = authMap.get("userId");
+		String newToken = authMap.get("newToken");
+		
+		// 위에서 가져온 아이디로 MemberVO 불러오기
+		MemberVO authMember = memberService.findMember(userId);
+
+		// 만약 db 에 없거나 하면 에러 반환
+		if (authMember == null) {
+			logger.error("해당 토큰 아이디의 가입 정보가 없습니다! " + userId);
+			rd.state="no_member";
+			rd.error = "해당 아이디의 가입 정보가 없습니다!";
+			return new ResponseEntity<>(rd, header, HttpStatus.SC_FORBIDDEN);
+		}
+		
+		// 회원 삭제 동작
+		int removeResult = memberService.removeMember(authMember.getMem_idx());
+
+		// 회원 삭제 동작이 제대로 안되면 ...
+		if (removeResult < 1) {
+			logger.error("해당 아이디 회원탈퇴 중 문제가 발생 : " + userId);
+			rd.state="member_remove_error";
+			rd.error = "해당 아이디의 회원탈퇴 중 문제가 발생했습니다";
+			return new ResponseEntity<>(rd, header, HttpStatus.SC_FORBIDDEN);
+		}
+
+		//회원삭제 정상동작 할때 쿠키 지우기
+		try {
+			ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+    			    .maxAge(0)
+    			    .path("/")
+    			    .secure(true) // https 환경에서만 동작하는지 체크
+    			    .sameSite("None") // 다른사이트에서도 쿠키 전송 가능한지 여부
+    			    .httpOnly(true) // 브라우저에서 직접 쿠키 접근 못하게 막기
+    			    .build();
+    		response.setHeader("Set-Cookie", cookie.toString()); 
+		}
+		catch(Exception e){
+			logger.error(e.getMessage());
+		}
+		
+		rd.state="true";
+		return new ResponseEntity<>(rd, header, HttpStatus.SC_OK);
+		
 	}
 		
 }

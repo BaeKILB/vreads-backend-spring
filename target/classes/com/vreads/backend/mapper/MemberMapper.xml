@@ -235,4 +235,10 @@
 			
 	</select>
 	
+	<!-- 계정 삭제 -->
+	<delete id="removeMember">
+		DELETE FROM mem_info
+		WHERE mem_idx = #{idx}
+	</delete>
+	
 </mapper>

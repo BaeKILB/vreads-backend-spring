@@ -95,8 +95,9 @@ public interface MemberMapper {
 			@Param("setPageListLimit") int setPageListLimit
 			);
 
-
 	
+	// Vreads 회원 삭제
+	int removeMember(int idx);
 
 	
 	

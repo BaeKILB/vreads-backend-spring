@@ -96,10 +96,6 @@ public class MemberService {
 //        member.setMem_status("1"); // 멤버 상태 디폴트
         member.setMem_bio("반갑습니다."); // 멤버 상태 디폴트
         member.setMem_profileImageUrl(""); // 
-//        System.out.println(member.getMem_mtel());
-//        System.out.println(member.getMem_address());
-//        System.out.println(member.getMem_birthday());
-        System.out.println("member 값들(service) : "+ member);
 
         memberMapper.insertMember(member);
         
@@ -320,12 +316,6 @@ public class MemberService {
 
 
 	
-
-
-
-
-
-	
 	// ------------------ 0809 배경인 추가 ---------------------
 	// 계좌 인증 여부 확인 체크
 	public String getAccountAuth(int mem_idx) {
@@ -339,6 +329,7 @@ public class MemberService {
 		return followMapper.mfollowCount(mem_idx);
 	}
 
+	
 	// 카카오 로그인 회원가입 있으면 업데이트
 //	@Transactional
 //	public void updateMemberWithKakao(MemberVO kakaoMember) {
@@ -354,4 +345,12 @@ public class MemberService {
 //		System.out.println("cnt: " + cnt);
 //		return cnt;
 //	}
+	
+	
+	//===========================================
+	// Vreads 회원 삭제
+	public int removeMember(int idx) {
+		return memberMapper.removeMember(idx);
+	}
+	
 }
