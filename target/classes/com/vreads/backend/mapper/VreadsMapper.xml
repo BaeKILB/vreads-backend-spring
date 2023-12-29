@@ -39,7 +39,8 @@
 		  UPDATE vreads 
 		  SET vd_vtTitle=#{vd_vtTitle}
 		  	, vd_vtDetail=#{vd_vtDetail}
-		  	, vd_media_1=#{vd_media_1}
+			, vd_subtag = #{vd_subtag}
+		  	, vd_media_1=#{vd_media_1} 
 		  	, vd_modifyDate= now()
 		  WHERE vreads_idx = #{vreads_idx}
 		</update>
